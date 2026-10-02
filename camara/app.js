@@ -1,5 +1,7 @@
 /* Protocolo QR da Câmara — lado da Câmara (login + banco Supabase) */
 const C = window.CONFIG || {};
+/* Aceita a URL colada com /rest/v1/ ou barra no final */
+if(C.SUPABASE_URL) C.SUPABASE_URL = String(C.SUPABASE_URL).trim().replace(/\/(rest|auth)\/v1\/?$/i, "").replace(/\/+$/, "");
 let sb = null;
 
 if(C.NOME_CAMARA){ $("h-org").textContent = C.NOME_CAMARA; document.title = "Protocolo · " + C.NOME_CAMARA; }
