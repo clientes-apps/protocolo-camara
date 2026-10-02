@@ -46,7 +46,13 @@ $("f-login").addEventListener("submit", async e => {
   b.disabled = false; b.textContent = "Entrar";
   if(error){
     $("l-status").hidden = false;
-    $("l-status").textContent = /invalid/i.test(error.message) ? "E-mail ou senha incorretos." : "Não foi possível entrar: " + error.message;
+    const m = error.message || "";
+    $("l-status").textContent =
+      (error.code === "invalid_credentials" || /invalid login credentials/i.test(m)) ? "E-mail ou senha incorretos." :
+      /api key/i.test(m) ? "Chave do Supabase inválida: confira SUPABASE_URL e SUPABASE_ANON_KEY no assets/config.js." :
+      /email not confirmed/i.test(m) ? "Usuário ainda não confirmado: no Supabase, confirme o usuário em Authentication → Users." :
+      /fetch|network/i.test(m) ? "Não foi possível falar com o Supabase: confira a SUPABASE_URL no assets/config.js." :
+      "Não foi possível entrar: " + m;
   }else{
     $("l-senha").value = "";
   }
