@@ -7,7 +7,7 @@
    banco (só quem faz login vê e registra). NUNCA cole aqui a "service_role".
    ===================================================================== */
 window.CONFIG = {
-  SUPABASE_URL: "https://jdymoyerkzxksogrmkkc.supabase.co/",
+  SUPABASE_URL: "https://jdymoyerkzxksogrmkkc.supabase.co",
   SUPABASE_ANON_KEY: "sb_publishable_B3EIaSZCf4qdIMPcCI06Lw_BSglEHlT",
 
   NOME_CAMARA: "Câmara Municipal"
