@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Protocolo QR</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="assets/estilo.css">
+<style>
+  .escolha{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  @media (max-width:600px){.escolha{grid-template-columns:1fr}}
+  .escolha a{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--ink);background:var(--surface);border:2px solid var(--line);border-radius:var(--r);padding:22px}
+  .escolha a:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .escolha b{font-size:1.2rem}
+  .escolha span{color:var(--muted)}
+</style>
+</head><body>
+<div class="wrap" style="max-width:760px">
+  <header><div>
+    <div class="eyebrow">Protocolo por QR Code</div>
+    <h1>Onde você está?</h1>
+  </div></header>
+  <div class="escolha">
+    <a href="etiqueta/"><b>Gerar etiqueta</b><span>Para o documento que será entregue e protocolado na Câmara</span></a>
+    <a href="camara/"><b>Recepção da Câmara</b><span>Receber documentos e consultar protocolos (com senha)</span></a>
+  </div>
+</div>
+</body></html>

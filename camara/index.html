@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Protocolo da Câmara</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="../assets/estilo.css">
+</head><body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow" id="h-org">Câmara Municipal</div>
+      <h1>Protocolo de documentos</h1>
+    </div>
+    <div class="user" id="user-box" hidden>
+      <span id="user-email"></span>
+      <button class="btn ghost small" type="button" id="b-sair">Sair</button>
+    </div>
+  </header>
+
+  <!-- Aviso de configuração -->
+  <section class="panel" id="tela-config" hidden>
+    <h2>Falta configurar o sistema</h2>
+    <p>Abra o arquivo <code>assets/config.js</code> e cole a <b>Project URL</b> e a chave <b>anon</b> do Supabase. O passo a passo está no arquivo LEIA-ME.</p>
+  </section>
+
+  <!-- Carregando -->
+  <p class="hint" id="tela-carregando">Carregando…</p>
+
+  <!-- Login -->
+  <section class="panel login" id="tela-login" hidden>
+    <h2>Entrar</h2>
+    <form id="f-login" class="grid" style="grid-template-columns:1fr">
+      <label>E-mail<input id="l-email" type="email" autocomplete="username" required></label>
+      <label>Senha<input id="l-senha" type="password" autocomplete="current-password" required></label>
+      <button class="btn" type="submit" id="b-entrar">Entrar</button>
+      <div id="l-status" class="status err" hidden></div>
+    </form>
+    <p class="hint">Esqueceu a senha? Peça ao responsável pelo sistema para criar uma nova.</p>
+  </section>
+
+  <!-- Sistema -->
+  <div id="app" hidden style="display:flex;flex-direction:column;gap:20px">
+    <nav role="tablist">
+      <button role="tab" id="tab-receber" aria-selected="true" data-go="receber"><b>Receber</b><span>Documentos que chegam</span></button>
+      <button role="tab" id="tab-enviar" aria-selected="false" data-go="enviar"><b>Enviar</b><span>Ofícios e pedidos dos vereadores</span></button>
+      <button role="tab" id="tab-lista" aria-selected="false" data-go="lista"><b>Protocolos</b><span>Tudo o que entrou e saiu</span></button>
+    </nav>
+
+    <!-- RECEBER -->
+    <section class="panel" id="pane-receber">
+      <h2>Receber documento</h2>
+      <div class="proc">
+        <span class="eyebrow" id="proc-titulo">De onde vem o documento?</span>
+        <div class="seg" role="radiogroup" aria-labelledby="proc-titulo">
+          <button type="button" role="radio" aria-checked="true" id="proc-pref" data-proc="PREFEITURA"><b>Prefeitura</b><span>Com etiqueta QR Code</span></button>
+          <button type="button" role="radio" aria-checked="false" id="proc-terc" data-proc="TERCEIROS"><b>Outros</b><span>Pessoas, órgãos, entidades, associações</span></button>
+        </div>
+      </div>
+      <div class="scan" id="c-scanbox">
+        <label for="c-scan">Aponte o leitor para o QR Code da etiqueta
+          <input id="c-scan" placeholder="O leitor digita aqui sozinho e aperta Enter" autocomplete="off" spellcheck="false"></label>
+        <div class="row">
+          <label class="btn ghost small" style="flex-direction:row;cursor:pointer" for="c-img">Ler QR de uma foto
+            <input id="c-img" type="file" accept="image/*" capture="environment" hidden></label>
+          <span class="hint">Sem etiqueta? Preencha os campos abaixo à mão.</span>
+        </div>
+      </div>
+      <div id="c-status" class="status" hidden></div>
+
+      <div class="retif" id="c-retif" hidden>
+        <div>
+          <b id="c-retif-tit">Retificação</b>
+          <span id="c-retif-sub">Leia a etiqueta nova ou ajuste os campos. O número do protocolo continua o mesmo.</span>
+        </div>
+        <button type="button" class="btn ghost small" id="b-cancelar-retif">Cancelar retificação</button>
+      </div>
+
+      <div class="cols">
+        <form id="f-cam" class="grid" autocomplete="off" data-proc="PREFEITURA">
+          <label>Tipo de documento<select id="c-tipo"></select></label>
+          <label class="so-pref" id="c-num-box">Número<input id="c-num" inputmode="numeric"></label>
+          <input type="hidden" id="c-ano"><input type="hidden" id="c-data">
+          <label>Data e ano<input id="c-auto" readonly tabindex="-1"></label>
+          <label class="full"><span id="c-autor-rot">Origem / autor</span><input id="c-autor" autocomplete="off"></label>
+          <label class="full">Assunto<textarea id="c-assunto"></textarea></label>
+          <label class="full" id="c-motivo-box" hidden>O que mudou (motivo da retificação)
+            <input id="c-motivo" placeholder="Ex.: Corrigido o art. 3º a pedido da Comissão de Finanças"></label>
+          <datalist id="origens">
+            <option value="Ministério Público"></option><option value="Defensoria Pública"></option>
+            <option value="Tribunal de Contas do Estado"></option><option value="Poder Judiciário"></option>
+            <option value="Associação"></option><option value="Sindicato"></option><option value="Cidadão"></option><option value="Outro"></option>
+          </datalist>
+          <label class="full" style="font-size:1rem">Seu nome (quem está recebendo)
+            <input id="c-rec" placeholder="Digite seu nome" style="border-color:var(--accent)"></label>
+          <div class="full row">
+            <button class="btn" type="submit" id="b-registrar">Registrar protocolo</button>
+            <button class="btn ghost" type="button" id="b-limpar">Limpar</button>
+          </div>
+        </form>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="eyebrow">Comprovante de protocolo</div>
+          <div id="comprovante" class="paper"><p class="hint" style="color:#555">O comprovante aparece aqui depois de registrar.</p></div>
+          <div class="row" id="imp-box" hidden>
+            <button class="btn" type="button" id="b-imprimir">Imprimir comprovante</button>
+            <label class="row" style="flex-direction:row;font-weight:400;gap:6px"><input type="checkbox" id="imp-2vias" checked style="width:auto"> 2 vias (portador e Câmara), em folhas separadas</label>
+          </div>
+          <ol class="steps" id="passos-pref">
+            <li>Leia o QR Code da etiqueta.</li>
+            <li>Confira os campos que ficaram verdes.</li>
+            <li>Confira seu nome e clique em “Registrar protocolo”.</li>
+            <li>Documento que voltou corrigido? Ao ler a etiqueta, o sistema avisa e oferece <b>retificação</b> (mantém o mesmo número). Também dá para usar o botão <b>Retificar</b> na aba Protocolos.</li>
+          </ol>
+          <ol class="steps" id="passos-terc" hidden>
+            <li>Escolha o tipo: ofício, requerimento ou outro pedido.</li>
+            <li>Escreva quem entregou (pessoa ou órgão) e o assunto.</li>
+            <li>Confira seu nome e clique em “Registrar protocolo”. Data e ano entram sozinhos.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ENVIAR -->
+    <section class="panel" id="pane-enviar" hidden>
+      <h2>Enviar documento de vereador</h2>
+      <div class="cols">
+        <form id="f-env" class="grid" autocomplete="off">
+          <label>Tipo de documento<select id="e-tipo"></select></label>
+          <label id="e-num-box" hidden>Número do ofício
+            <span class="row" style="gap:6px;flex-wrap:nowrap"><input id="e-num" inputmode="numeric" style="flex:1"><span class="hint" id="e-ano-rot" style="white-space:nowrap">/2026</span></span></label>
+          <label id="e-auto-box">Data e ano<input id="e-auto" readonly tabindex="-1"></label>
+          <p class="full hint" id="e-ultimo" hidden></p>
+          <label class="full">Vereador(a)<input id="e-ver" placeholder="Digite o nome de quem assina o documento" autocomplete="off"></label>
+          <label class="full">Destinatário (cargo)
+            <select id="e-cargo">
+              <option value="">— escolha para quem vai —</option>
+              <option>Prefeito(a) Municipal</option>
+              <option>Vice-Prefeito(a)</option>
+              <option>Secretário(a) Municipal</option>
+              <option>Deputado(a) Estadual</option>
+              <option>Deputado(a) Federal</option>
+              <option>Senador(a)</option>
+              <option>Governador(a) do Estado</option>
+              <option value="Outro">Outro</option>
+            </select></label>
+          <label class="full" id="e-dest-box" hidden><span id="e-dest-rot">Nome</span>
+            <input id="e-dest" autocomplete="off"></label>
+          <label class="full">Assunto<textarea id="e-assunto" placeholder="Ex.: Solicita patrolamento da estrada do Barro Vermelho"></textarea></label>
+          <label class="full" style="font-size:1rem">Seu nome (quem está registrando)
+            <input id="e-rec" placeholder="Digite seu nome" style="border-color:var(--accent)"></label>
+          <div class="full row">
+            <button class="btn" type="submit" id="b-enviar">Registrar envio</button>
+            <button class="btn ghost" type="button" id="b-limpar-env">Limpar</button>
+          </div>
+          <div class="full status" id="e-status" hidden></div>
+        </form>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="eyebrow">Comprovante de envio</div>
+          <div id="e-comprovante" class="paper"><p class="hint" style="color:#555">O comprovante aparece aqui depois de registrar.</p></div>
+          <div class="row" id="e-imp-box" hidden>
+            <button class="btn" type="button" id="b-imprimir-env">Imprimir comprovante</button>
+            <label class="row" style="flex-direction:row;font-weight:400;gap:6px"><input type="checkbox" id="e-imp-2vias" checked style="width:auto"> 2 vias (destinatário e Câmara), em folhas separadas</label>
+          </div>
+          <ol class="steps">
+            <li>Escolha o tipo. Se for ofício, digite o número da sequência dos vereadores.</li>
+            <li>Escreva o vereador, o destinatário e o assunto.</li>
+            <li>Clique em “Registrar envio”. Data e ano entram sozinhos.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- LISTA -->
+    <section class="panel" id="pane-lista" hidden>
+      <div class="row" style="justify-content:space-between">
+        <h2>Protocolos registrados</h2>
+        <div class="row" style="flex:1 1 420px;justify-content:flex-end">
+          <label style="flex:0 1 220px">Período<select id="l-mes"></select></label>
+          <label style="flex:1 1 240px">Buscar em todos os períodos<input id="l-busca" type="search" placeholder="Número, assunto ou nome"></label>
+        </div>
+      </div>
+      <div class="filtros" role="group" aria-label="Filtrar por entrada ou saída">
+        <span class="eyebrow">Mostrar</span>
+        <div class="chips" id="l-dir">
+          <button type="button" class="chip" data-d="" aria-pressed="true">Tudo</button>
+          <button type="button" class="chip" data-d="RECEBIDO" aria-pressed="false">Recebidos</button>
+          <button type="button" class="chip" data-d="ENVIADO" aria-pressed="false">Enviados</button>
+        </div>
+      </div>
+      <div class="filtros" role="group" aria-label="Filtrar por tipo">
+        <span class="eyebrow">Filtrar por tipo</span>
+        <div class="chips" id="l-chips"></div>
+      </div>
+      <p class="hint" id="l-conta"></p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Protocolo</th><th>Data e hora</th><th>Documento</th><th>Origem / destino</th><th>Assunto</th><th>Responsável</th><th></th></tr></thead>
+        <tbody id="l-body"></tbody>
+      </table></div>
+      <div class="pager" id="l-pager"></div>
+    </section>
+  </div>
+</div>
+
+<script src="../assets/config.js"></script>
+<script src="../assets/comum.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="app.js"></script>
+</body></html>

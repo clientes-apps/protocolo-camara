@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Etiqueta de protocolo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="../assets/estilo.css">
+</head><body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow" id="h-org">Câmara Municipal · Protocolo</div>
+      <h1>Gerar etiqueta de protocolo</h1>
+      <p class="sub">Preencha, imprima e cole a etiqueta na primeira página do documento que será protocolado na Câmara.</p>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="cols">
+      <form id="f-pref" class="grid" autocomplete="off">
+        <label>Tipo de documento
+          <select id="p-tipo" required></select></label>
+        <label id="p-num-box">Número
+          <input id="p-num" inputmode="numeric"></label>
+        <label class="full">Data e ano
+          <input id="p-auto" readonly tabindex="-1"></label>
+        <label class="full">Origem / autor
+          <input id="p-autor" placeholder="Ex.: setor ou pessoa que envia o documento"></label>
+        <label class="full">Assunto (ementa resumida)
+          <textarea id="p-assunto" placeholder="Ex.: Dispõe sobre..."></textarea></label>
+        <div class="full row">
+          <button class="btn" type="submit">Gerar etiqueta</button>
+          <button class="btn ghost" type="button" id="b-novo">Novo documento</button>
+        </div>
+      </form>
+
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div class="eyebrow">Etiqueta para colar na 1ª página</div>
+        <div id="etiqueta" class="paper"><p class="hint" style="color:#555">Preencha os dados e clique em “Gerar etiqueta”.</p></div>
+        <div class="row" id="et-imp-box" hidden>
+          <button class="btn" type="button" id="b-imprimir-et">Imprimir etiqueta</button>
+        </div>
+        <div id="p-status" class="status" hidden></div>
+        <ol class="steps">
+          <li>Escolha o tipo e informe o número (Prestação de Contas e Outros não têm número). Data e ano entram sozinhos.</li>
+          <li>Clique em “Gerar etiqueta” e depois em “Imprimir etiqueta”.</li>
+          <li>Recorte e cole na primeira página do documento.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+  <p class="hint">Esta página não guarda nada: ela só monta a etiqueta. O protocolo é registrado na Câmara, na entrega do documento, com a leitura do QR Code.</p>
+</div>
+
+<script src="../assets/config.js"></script>
+<script src="../assets/comum.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const C = window.CONFIG || {};
+if(C.NOME_CAMARA) $("h-org").textContent = C.NOME_CAMARA + " · Protocolo";
+preencherTipos($("p-tipo"));
+
+function valoresIniciais(){
+  $("p-auto").value = fmtData(hojeISO()) + " · automático";
+  $("p-autor").value = lembrar.get("autor");
+}
+valoresIniciais();
+
+function aviso(msg){ const s=$("p-status"); s.hidden=!msg; s.className="status warn"; s.textContent=msg||""; }
+
+function gerarEtiqueta(){
+  const d = {tipo:$("p-tipo").value, num:$("p-num").value.trim(), ano:hojeISO().slice(0,4),
+             data:hojeISO(), autor:$("p-autor").value.trim(), assunto:$("p-assunto").value.trim()};
+  if(!d.tipo){ aviso("Escolha o tipo do documento."); return; }
+  if(!semNumero(d.tipo) && !d.num){ aviso("Informe o número do documento."); $("p-num").focus(); return; }
+  if(semNumero(d.tipo)) d.num = "";
+  if(!window.QRCode){ aviso("Não foi possível carregar o gerador de QR Code. Verifique a internet e recarregue a página."); return; }
+  aviso("");
+  lembrar.set("autor", d.autor);
+  $("etiqueta").innerHTML = `<div class="head"><span>Etiqueta de protocolo · ${esc(C.NOME_CAMARA||"Câmara Municipal")}</span><span>${esc(TIPOS[d.tipo])}</span></div>
+    <div class="qr" id="qr-et"></div>
+    <dl><dt>Documento</dt><dd>${d.num ? `${esc(d.tipo)} nº ${esc(d.num)}/${esc(d.ano)}` : esc(TIPOS[d.tipo])}</dd>
+    <dt>Data</dt><dd>${fmtData(d.data)}</dd>
+    <dt>Origem</dt><dd>${esc(d.autor||"—")}</dd>
+    <dt>Assunto</dt><dd style="font-weight:400">${esc(d.assunto||"—")}</dd></dl>`;
+  qr($("qr-et"), montarCodigo(d));
+  $("et-imp-box").hidden = false;
+  const e=$("etiqueta"); e.classList.remove("pop"); void e.offsetWidth; e.classList.add("pop");
+  setTimeout(() => $("b-imprimir-et").focus(), 50);
+}
+
+/* Prestação de Contas e Outros não têm número: o campo some */
+function ajustarNumero(){
+  const semNum = semNumero($("p-tipo").value);
+  $("p-num-box").hidden = semNum;
+  if(semNum) $("p-num").value = "";
+}
+$("p-tipo").addEventListener("change", ajustarNumero);
+$("f-pref").addEventListener("submit", e => { e.preventDefault(); gerarEtiqueta(); });
+$("b-imprimir-et").addEventListener("click", () => imprimirPapel($("etiqueta"), [""], "etiqueta"));
+$("b-novo").addEventListener("click", () => {
+  $("p-num").value = ""; $("p-assunto").value = ""; $("p-tipo").value = "";
+  $("etiqueta").innerHTML = '<p class="hint" style="color:#555">Preencha os dados e clique em “Gerar etiqueta”.</p>';
+  $("et-imp-box").hidden = true; aviso(""); valoresIniciais(); ajustarNumero(); $("p-tipo").focus();
+});
+// Qualquer alteração depois de gerar esconde o botão de imprimir até gerar de novo (evita etiqueta desatualizada)
+document.querySelectorAll("#f-pref input,#f-pref select,#f-pref textarea").forEach(el =>
+  el.addEventListener("input", () => { if(!$("et-imp-box").hidden){ $("et-imp-box").hidden = true; aviso("Dados alterados: clique em “Gerar etiqueta” de novo."); } }));
+</script>
+</body></html>
